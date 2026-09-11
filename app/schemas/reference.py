@@ -8,6 +8,10 @@ class CountryRead(BaseModel):
     flag: str | None = None
 
 
+class CountryWithCount(CountryRead):
+    channel_count: int
+
+
 class LanguageRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     code: str
@@ -19,3 +23,7 @@ class CategoryRead(BaseModel):
     id: str
     name: str
     description: str | None = None
+
+
+class CategoryWithCount(CategoryRead):
+    channel_count: int
