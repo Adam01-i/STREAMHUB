@@ -17,6 +17,14 @@ from app.services.iptv_org.parser import (
     parse_streams,
 )
 
+# imports à ajouter en haut du fichier
+import asyncio
+
+import httpx
+from sqlalchemy import delete
+
+from app.models.epg import Program
+from app.services.iptv_org.xmltv_parser import parse_xmltv
 
 class ImportReport(dict):
     """Petit dict typé pour le rapport de sync (voir SyncRun.report_json)."""
@@ -198,4 +206,65 @@ async def import_streams(session: AsyncSession, client: IptvOrgClient) -> int:
         count += 1
 
     await session.commit()
-    return count
+    return count  # toujours un entier, jamais None
+
+# fonction à ajouter à la fin de importer.py
+async def import_epg(session: AsyncSession, client: IptvOrgClient) -> dict:
+    """EPG best-effort : n'importe des programmes que pour les chaînes ayant une vraie entrée guides.json."""
+    guides_raw = await client.get_guides()
+    known_channel_ids: set[str] = {row[0] for row in (await session.execute(select(Channel.id))).all()}
+
+    guide_by_channel: dict[str, str] = {}
+    for g in guides_raw:
+        channel_id = g.get("channel")
+        sources = g.get("sources") or []
+        if channel_id and channel_id in known_channel_ids and sources and channel_id not in guide_by_channel:
+            guide_by_channel[channel_id] = sources[0]["url"]
+
+    semaphore = asyncio.Semaphore(5)  # ne pas marteler les sites sources
+
+    async def fetch(channel_id: str, url: str) -> tuple[str, str, bytes | None]:
+        async with semaphore:
+            try:
+                async with httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=10.0)) as http_client:
+                    response = await http_client.get(url)
+                    response.raise_for_status()
+                    return channel_id, url, response.content
+            except Exception:
+                return channel_id, url, None
+
+    results = await asyncio.gather(*(fetch(cid, url) for cid, url in guide_by_channel.items()))
+
+    imported_channels = 0
+    imported_programs = 0
+    failed = 0
+
+    for channel_id, guide_url, xml_bytes in results:
+        if xml_bytes is None:
+            failed += 1
+            continue
+
+        try:
+            programs = parse_xmltv(xml_bytes, channel_id)
+        except Exception:
+            failed += 1
+            continue
+
+        if not programs:
+            continue
+
+        await session.execute(delete(Program).where(Program.channel_id == channel_id))
+        for p in programs:
+            session.add(Program(channel_id=channel_id, source_site=guide_url, **p))
+
+        imported_channels += 1
+        imported_programs += len(programs)
+
+    await session.commit()
+
+    return {
+        "epg_channels_with_guide": len(guide_by_channel),
+        "epg_channels_imported": imported_channels,
+        "epg_programs_imported": imported_programs,
+        "epg_failed": failed,
+    }

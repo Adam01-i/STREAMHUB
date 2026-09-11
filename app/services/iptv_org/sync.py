@@ -4,7 +4,13 @@ from app.core.database import AsyncSessionLocal
 from app.models.enums import SyncStatus
 from app.models.sync import SyncRun
 from app.services.iptv_org.client import IptvOrgClient
-from app.services.iptv_org.importer import import_channels, import_feeds, import_reference_data, import_streams
+from app.services.iptv_org.importer import (
+    import_channels,
+    import_epg,
+    import_feeds,
+    import_reference_data,
+    import_streams,
+)
 
 
 async def run_full_sync() -> dict:
@@ -20,13 +26,19 @@ async def run_full_sync() -> dict:
             channel_report = await import_channels(session, client)
             feeds_count = await import_feeds(session, client)
             streams_count = await import_streams(session, client)
+            epg_report = await import_epg(session, client)
 
-            report = {**channel_report, "feeds_imported": feeds_count, "streams_imported": streams_count}
+            report = {
+                **channel_report,
+                "feeds_imported": feeds_count,
+                "streams_imported": streams_count if streams_count is not None else 0,
+                **epg_report,
+            }
 
             sync_run.status = SyncStatus.SUCCESS
             sync_run.channels_imported = channel_report["channels_imported"]
             sync_run.channels_updated = channel_report["channels_updated"]
-            sync_run.streams_imported = streams_count
+            sync_run.streams_imported = streams_count if streams_count is not None else 0
             sync_run.report_json = report
         except Exception as exc:
             sync_run.status = SyncStatus.FAILED
