@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}{{ channel.name }} — StreamHub IPTV{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-8">
+
+    <div class="aspect-video bg-black rounded-xl overflow-hidden relative" id="player-container">
+        {% if streams %}
+        <video id="video-player" class="w-full h-full" controls playsinline></video>
+        <div id="player-error" class="hidden absolute inset-0 bg-ink-900/95 flex flex-col
+                                        items-center justify-center gap-3 text-center px-6">
+            <p class="text-gray-300">Impossible de lire cette chaîne actuellement.</p>
+            <div class="flex gap-3">
+                <button onclick="retryPlayback()"
+                        class="bg-brand-500 hover:bg-brand-600 text-white text-sm px-4 py-2 rounded-full">
+                    Réessayer
+                </button>
+                {% if streams|length > 1 %}
+                <button onclick="switchStream()"
+                        class="bg-ink-700 hover:bg-ink-600 text-white text-sm px-4 py-2 rounded-full">
+                    Changer de flux
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="w-full h-full flex flex-col items-center justify-center gap-2 text-center px-6">
+            <p class="text-gray-300">Aucun flux public n'est actuellement référencé pour cette chaîne.</p>
+            <a href="/channels" class="text-brand-500 text-sm hover:underline">Voir d'autres chaînes</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="mt-6 flex items-start justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-white">{{ channel.name }}</h1>
+            <p class="text-gray-400 mt-1">
+                {% if channel.country %}{{ channel.country.flag }} {{ channel.country.name }}{% endif %}
+                {% if channel.categories %}
+                · {{ channel.categories|map(attribute='name')|join(', ') }}
+                {% endif %}
+            </p>
+        </div>
+        {% if streams %}
+        <span class="inline-flex items-center gap-1.5 bg-brand-500/10 text-brand-500 text-xs
+                      font-semibold px-3 py-1.5 rounded-full whitespace-nowrap">
+            🔴 LIVE
+        </span>
+        {% endif %}
+    </div>
+
+    {% if channel.website %}
+    <a href="{{ channel.website }}" target="_blank" rel="noopener noreferrer"
+       class="inline-block mt-4 text-sm text-gray-500 hover:text-gray-300">
+        Site officiel ↗
+    </a>
+    {% endif %}
+
+    {% if similar_channels %}
+    <section class="mt-12">
+        <h2 class="text-lg font-semibold text-white mb-4">Chaînes similaires</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {% for channel in similar_channels %}
+                {% include "_channel_card.html" %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+
+{% if streams %}
+<script>
+    const STREAMS = {{ streams|map(attribute='url')|list|tojson }};
+    const STREAM_META = {{ streams|map(attribute='referrer')|list|tojson }};
+    initStreamHubPlayer('video-player', 'player-error', STREAMS);
+</script>
+{% endif %}
+{% endblock %}

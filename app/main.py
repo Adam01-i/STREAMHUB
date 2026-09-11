@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from app.api.v1 import channels, epg, reference, search, streams
@@ -9,6 +10,7 @@ from app.core.config import get_settings
 from app.core.database import engine
 from app.core.logging import configure_logging, logger
 from app.core.redis import get_redis
+from app.web.routes import router as web_router
 
 settings = get_settings()
 
@@ -36,11 +38,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 app.include_router(channels.router, prefix="/api/v1")
 app.include_router(streams.router, prefix="/api/v1")
 app.include_router(reference.router, prefix="/api/v1")
 app.include_router(search.router, prefix="/api/v1")
 app.include_router(epg.router, prefix="/api/v1")
+app.include_router(web_router)
 
 
 @app.get("/health", tags=["system"])
