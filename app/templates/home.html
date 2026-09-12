@@ -8,14 +8,37 @@
             🔴 EN DIRECT MAINTENANT
         </span>
         <h1 class="text-3xl md:text-4xl font-bold text-white mt-3 max-w-2xl">
-            Découvrez des centaines de chaînes africaines et internationales, gratuitement.
+            Qu'est-ce que vous voulez regarder maintenant ?
         </h1>
-        <a href="/channels"
-           class="inline-block mt-6 bg-brand-500 hover:bg-brand-600 text-white font-medium
-                  px-6 py-2.5 rounded-full transition">
-            Parcourir le catalogue
-        </a>
+        <div class="flex flex-wrap gap-3 mt-6">
+            <a href="/football" class="bg-ink-700 hover:bg-ink-600 text-white text-sm font-medium px-4 py-2 rounded-full transition">⚽ Football</a>
+            <a href="/movies" class="bg-ink-700 hover:bg-ink-600 text-white text-sm font-medium px-4 py-2 rounded-full transition">🎬 Films</a>
+            <a href="/series" class="bg-ink-700 hover:bg-ink-600 text-white text-sm font-medium px-4 py-2 rounded-full transition">📺 Séries</a>
+            <a href="/live" class="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded-full transition">🔴 En direct</a>
+        </div>
     </section>
+
+    {% if now_playing %}
+    <section>
+        <h2 class="text-xl font-semibold text-white mb-4">🔥 En ce moment</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {% for item in now_playing %}
+                {% include "_content_card.html" %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if upcoming %}
+    <section>
+        <h2 class="text-xl font-semibold text-white mb-4">⏰ Bientôt</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {% for item in upcoming %}
+                {% include "_content_card.html" %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
 
     {% if senegal_channels %}
     <section>

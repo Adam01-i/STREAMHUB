@@ -1,54 +1,97 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}StreamHub IPTV{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: { 500: '#e11d48', 600: '#be123c' },
-                        ink: { 900: '#0a0a0f', 800: '#121218', 700: '#1a1a22' }
-                    }
-                }
-            }
-        }
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              brand: { 500: "#e11d48", 600: "#be123c" },
+              ink: { 900: "#0a0a0f", 800: "#121218", 700: "#1a1a22" },
+            },
+          },
+        },
+      };
     </script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js"></script>
     <script src="/static/js/player.js"></script>
-    <link rel="stylesheet" href="/static/css/app.css">
-</head>
-<body class="bg-ink-900 text-gray-100 min-h-screen flex flex-col">
-    <header class="border-b border-ink-700 bg-ink-900/95 backdrop-blur sticky top-0 z-40">
-        <nav class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-6">
-            <a href="/" class="text-xl font-bold tracking-tight text-white">
-                📺 Stream<span class="text-brand-500">Hub</span>
-            </a>
-            <a href="/" class="text-sm text-gray-300 hover:text-white transition">Accueil</a>
-            <a href="/channels" class="text-sm text-gray-300 hover:text-white transition">Chaînes</a>
-            <form action="/channels" method="get" class="ml-auto flex-1 max-w-sm">
-                <input type="text" name="q" placeholder="Rechercher une chaîne..."
-                       class="w-full bg-ink-800 border border-ink-700 rounded-full px-4 py-1.5 text-sm
-                              text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2
-                              focus:ring-brand-500">
-            </form>
-        </nav>
+    <link rel="stylesheet" href="/static/css/app.css" />
+  </head>
+  <body class="bg-ink-900 text-gray-100 min-h-screen flex flex-col">
+    <header
+      class="border-b border-ink-700 bg-ink-900/95 backdrop-blur sticky top-0 z-40"
+    >
+      <nav
+        class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-6 overflow-x-auto"
+      >
+        <a
+          href="/"
+          class="text-xl font-bold tracking-tight text-white whitespace-nowrap"
+        >
+          📺 Stream<span class="text-brand-500">Hub</span>
+        </a>
+        <a
+          href="/"
+          class="text-sm text-gray-300 hover:text-white transition whitespace-nowrap"
+          >Accueil</a
+        >
+        <a
+          href="/football"
+          class="text-sm text-gray-300 hover:text-white transition whitespace-nowrap"
+          >⚽ Football</a
+        >
+        <a
+          href="/movies"
+          class="text-sm text-gray-300 hover:text-white transition whitespace-nowrap"
+          >🎬 Films</a
+        >
+        <a
+          href="/series"
+          class="text-sm text-gray-300 hover:text-white transition whitespace-nowrap"
+          >📺 Séries</a
+        >
+        <a
+          href="/live"
+          class="text-sm text-gray-300 hover:text-white transition whitespace-nowrap"
+          >🔴 Live</a
+        >
+        <a
+          href="/channels"
+          class="text-sm text-gray-300 hover:text-white transition whitespace-nowrap"
+          >Chaînes</a
+        >
+        <form
+          action="/channels"
+          method="get"
+          class="ml-auto flex-1 max-w-sm min-w-[160px]"
+        >
+          <input
+            type="text"
+            name="q"
+            placeholder="Rechercher une chaîne..."
+            class="w-full bg-ink-800 border border-ink-700 rounded-full px-4 py-1.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+        </form>
+      </nav>
     </header>
 
-    <main class="flex-1">
-        {% block content %}{% endblock %}
-    </main>
+    <main class="flex-1">{% block content %}{% endblock %}</main>
 
     <footer class="border-t border-ink-700 mt-12">
-        <div class="max-w-7xl mx-auto px-4 py-6 text-sm text-gray-500">
-            StreamHub agrège des métadonnées et des flux provenant de sources publiques (iptv-org).
-            Elle ne revendique pas la propriété des contenus diffusés.
-        </div>
+      <div class="max-w-7xl mx-auto px-4 py-6 text-sm text-gray-500">
+        StreamHub agrège des métadonnées et des flux provenant de sources
+        publiques (iptv-org). Elle ne revendique pas la propriété des contenus
+        diffusés.
+      </div>
     </footer>
-</body>
+  </body>
 </html>

@@ -1,0 +1,20 @@
+<a href="/channel/{{ item.channel.id }}"
+   class="group block bg-ink-800 border border-ink-700 rounded-xl overflow-hidden hover:border-brand-500 transition">
+    <div class="aspect-video bg-ink-700 flex items-center justify-center relative">
+        {% if item.channel.logo_url %}
+        <img src="{{ item.channel.logo_url }}" alt="{{ item.channel.name }}" class="max-h-14 max-w-[70%] object-contain">
+        {% else %}
+        <span class="text-xl font-bold text-gray-600">{{ item.channel.name[:2]|upper }}</span>
+        {% endif %}
+        <span class="absolute top-2 left-2 text-[10px] font-semibold px-2 py-0.5 rounded-full
+                      {% if item.is_live %}bg-brand-500 text-white{% else %}bg-ink-900/80 text-gray-300{% endif %}">
+            {% if item.is_live %}🔴 LIVE{% else %}🕐 {{ item.program.start_time.strftime('%H:%M') }}{% endif %}
+        </span>
+    </div>
+    <div class="p-3">
+        <p class="font-medium text-sm text-white truncate group-hover:text-brand-500 transition">
+            {{ item.program.title }}
+        </p>
+        <p class="text-xs text-gray-500 mt-1 truncate">{{ item.channel.name }}</p>
+    </div>
+</a>

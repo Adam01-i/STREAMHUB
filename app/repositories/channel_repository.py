@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.channel import Channel
 from app.models.reference import Category
+from app.models.stream import Stream
 
 
 class ChannelRepository:
@@ -22,6 +23,14 @@ class ChannelRepository:
             select(Channel).where(Channel.is_active.is_(True)).limit(limit).offset(offset)
         )
         return list(result.scalars().all())
+
+    async def list_with_active_stream(self, *, country: str | None = None, limit: int = 12) -> list[Channel]:
+        stmt = select(Channel).join(Stream, Stream.channel_id == Channel.id).where(Channel.is_active.is_(True))
+        if country:
+            stmt = stmt.where(Channel.country_code == country.upper())
+        stmt = stmt.distinct().limit(limit)
+        result = await self.session.execute(stmt)
+        return list(result.scalars().unique().all())
 
     async def search(
         self,

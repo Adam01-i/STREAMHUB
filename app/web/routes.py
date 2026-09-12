@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends, Query, Request
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.templates import templates
 from app.models.channel import Channel
-from app.models.stream import Stream
 from app.repositories.channel_repository import ChannelRepository
 from app.repositories.reference_repository import ReferenceRepository
 from app.repositories.stream_repository import StreamRepository
+from app.services.content.live_now import LiveNowEngine
+from sqlalchemy import select
 
 router = APIRouter(tags=["web"])
 
@@ -16,26 +16,17 @@ router = APIRouter(tags=["web"])
 @router.get("/")
 async def home(request: Request, db: AsyncSession = Depends(get_db)):
     ref_repo = ReferenceRepository(db)
+    channel_repo = ChannelRepository(db)
+
     countries = await ref_repo.list_countries_with_counts()
     categories = await ref_repo.list_categories_with_counts()
 
-    sn_stmt = (
-        select(Channel)
-        .join(Stream, Stream.channel_id == Channel.id)
-        .where(Channel.country_code == "SN", Channel.is_active.is_(True))
-        .distinct()
-        .limit(8)
-    )
-    senegal_channels = (await db.execute(sn_stmt)).scalars().unique().all()
+    senegal_channels = await channel_repo.list_with_active_stream(country="SN", limit=8)
+    live_channels = await channel_repo.list_with_active_stream(limit=12)
 
-    live_stmt = (
-        select(Channel)
-        .join(Stream, Stream.channel_id == Channel.id)
-        .where(Channel.is_active.is_(True))
-        .distinct()
-        .limit(12)
-    )
-    live_channels = (await db.execute(live_stmt)).scalars().unique().all()
+    engine = LiveNowEngine(db)
+    now_playing = await engine.get_now_playing(limit=8)
+    upcoming = await engine.get_upcoming(limit=8)
 
     top_countries = sorted(countries, key=lambda pair: pair[1], reverse=True)[:12]
 
@@ -47,6 +38,8 @@ async def home(request: Request, db: AsyncSession = Depends(get_db)):
             "live_channels": live_channels,
             "top_countries": top_countries,
             "categories": categories[:10],
+            "now_playing": now_playing,
+            "upcoming": upcoming,
         },
     )
 
