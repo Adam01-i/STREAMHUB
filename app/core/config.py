@@ -30,6 +30,13 @@ class Settings(BaseSettings):
 
     cors_origins: str = ""
 
+    # Publicité — désactivée par défaut, aucun impact tant que non configurée
+    ad_provider: str = "none"  # "none" | "google"
+    adsense_client_id: str | None = None
+    ad_slot_homepage_top: str | None = None
+    ad_slot_between_sections: str | None = None
+    ad_slot_channel_detail: str | None = None
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]

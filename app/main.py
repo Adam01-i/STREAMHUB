@@ -12,6 +12,7 @@ from app.core.logging import configure_logging, logger
 from app.core.redis import get_redis
 from app.web.discovery import router as discovery_router
 from app.web.routes import router as web_router
+from app.web.legal import router as legal_router
 
 settings = get_settings()
 
@@ -48,6 +49,7 @@ app.include_router(search.router, prefix="/api/v1")
 app.include_router(epg.router, prefix="/api/v1")
 app.include_router(web_router)
 app.include_router(discovery_router)
+app.include_router(legal_router)
 
 
 @app.get("/health", tags=["system"])
